@@ -1,0 +1,24 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="CrossBrowserSuite" parallel="tests" thread-count="2">
+
+    <!-- Add this listeners section -->
+    <listeners>
+        <listener class-name="listeners.ExtentTestNGListener"/>
+    </listeners>
+
+    <test name="Chrome Test">
+        <parameter name="browser" value="chrome"/>
+        <classes>
+            <class name="tests.ECommercePurchaseTest"/>
+        </classes>
+    </test>
+
+    <test name="Firefox Test">
+        <parameter name="browser" value="firefox"/>
+        <classes>
+            <class name="tests.ECommercePurchaseTest"/>
+        </classes>
+    </test>
+
+</suite>
