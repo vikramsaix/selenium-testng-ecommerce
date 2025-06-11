@@ -16,7 +16,7 @@ import static org.testng.Assert.assertTrue;
 
 public class ECommercePurchaseTest extends BaseTest {
 
-    @Test
+    @Test(groups = {"smoke", "sanity"})  // ✅ Smoke + Sanity test group
     public void testProductPurchaseFlow() {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
@@ -51,19 +51,19 @@ public class ECommercePurchaseTest extends BaseTest {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("search")));
         homePage.searchProduct("T-shirt");
 
-        // 6. Click on a product
+        // 6. Click on a product with iframe handling
         System.out.println("Step 6: Clicking on a product...");
-        WebElement productLink = wait.until(ExpectedConditions.elementToBeClickable(
+        WebElement productLink = wait.until(ExpectedConditions.presenceOfElementLocated(
                 By.cssSelector("a[href*='/product_details']")
         ));
-        productLink.click();
+        productPage.hideIframes();                        // ✅ Hide any blocking ads
+        productPage.safeClick(productLink);               // ✅ JS click to avoid interception
 
         // 7. Add to cart and go to cart
         System.out.println("Step 7: Adding product to cart...");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".product-information h2")));
         String expectedName = productPage.getProductName();
-
-        productPage.addToCart();   // Your ProductPage must be updated to use CSS "button.cart"
+        productPage.addToCart();
         productPage.goToCart();
 
         // 8. Assert product in cart
@@ -82,6 +82,6 @@ public class ECommercePurchaseTest extends BaseTest {
         ));
         assertTrue(loginPage.isLoggedOut(), "Logout failed");
 
-        System.out.println("Test completed successfully.");
+        System.out.println("✅ Test completed successfully.");
     }
 }

@@ -18,15 +18,11 @@ public class ProductPage {
     public void clickOnProductLink() {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
-
         WebElement firstProductLink = wait.until(ExpectedConditions.presenceOfElementLocated(
                 By.cssSelector("a[href*='/product_details']")
         ));
 
-
         hideIframes();
-
-
         safeClick(firstProductLink);
         System.out.println("Clicked on first product link.");
     }
@@ -34,13 +30,11 @@ public class ProductPage {
     public void addToCart() {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
-
         wait.until(ExpectedConditions.visibilityOfElementLocated(
                 By.cssSelector("div.product-information > h2")
         ));
         System.out.println("Product page is loaded.");
 
-        // Wait for Add to Cart button
         WebElement addToCartBtn = wait.until(ExpectedConditions.elementToBeClickable(
                 By.cssSelector("button.btn.cart")
         ));
@@ -51,18 +45,14 @@ public class ProductPage {
     public void goToCart() {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
 
-
         WebElement cartModal = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("cartModal")));
         System.out.println("Cart modal is visible.");
 
-
         hideIframes();
-
 
         WebElement viewCartLink = wait.until(ExpectedConditions.elementToBeClickable(
                 By.cssSelector("#cartModal a[href='/view_cart']")
         ));
-
         viewCartLink.click();
         System.out.println("Clicked View Cart link, navigating to Cart page.");
     }
@@ -77,15 +67,13 @@ public class ProductPage {
         return productName;
     }
 
-
     public void safeClick(WebElement element) {
         JavascriptExecutor js = (JavascriptExecutor) driver;
         js.executeScript("arguments[0].scrollIntoView(true);", element);
         js.executeScript("arguments[0].click();", element);
     }
 
-
-    private void hideIframes() {
+    public void hideIframes() {
         try {
             List<WebElement> iframes = driver.findElements(By.tagName("iframe"));
             if (!iframes.isEmpty()) {

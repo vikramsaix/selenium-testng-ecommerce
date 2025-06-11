@@ -11,11 +11,11 @@ public class HomePage {
     }
 
     public boolean isLoggedIn() {
-
         return !driver.findElements(By.linkText("Logout")).isEmpty();
     }
 
     public void searchProduct(String product) {
+        driver.findElement(By.name("search")).clear();  // ✅ Clear field before typing
         driver.findElement(By.name("search")).sendKeys(product);
         driver.findElement(By.id("submit_search")).click();
     }
