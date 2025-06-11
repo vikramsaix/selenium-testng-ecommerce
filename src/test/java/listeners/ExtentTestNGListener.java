@@ -1,44 +1,38 @@
 package listeners;
 
-import com.aventstack.extentreports.*;
-import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
+import com.aventstack.extentreports.ExtentReports;
+import com.aventstack.extentreports.ExtentTest;
+import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.aventstack.extentreports.reporter.configuration.Theme;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.WebDriver;
 import org.testng.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-public class ExtentTestNGListener implements ITestListener {
+public class ExtentTestNGListener implements ITestListener, ISuiteListener {
 
     private static ExtentReports extent;
     private static ThreadLocal<ExtentTest> test = new ThreadLocal<>();
 
     @Override
-    public void onStart(ITestContext context) {
-        // HTML Report path → test-output/ExtentReport.html
-        ExtentHtmlReporter htmlReporter = new ExtentHtmlReporter("test-output/ExtentReport.html");
-        htmlReporter.config().setTheme(Theme.STANDARD);
-        htmlReporter.config().setDocumentTitle("Automation Report");
-        htmlReporter.config().setReportName("ECommerce Test Report");
+    public void onStart(ISuite suite) {
+        ExtentSparkReporter spark = new ExtentSparkReporter("test-output/ExtentReport.html");
+        spark.config().setDocumentTitle("ECommerce Test Report");
+        spark.config().setReportName("Automation Suite Results");
+        spark.config().setTheme(Theme.DARK); // Options: STANDARD, DARK
 
         extent = new ExtentReports();
-        extent.attachReporter(htmlReporter);
+        extent.attachReporter(spark);
         extent.setSystemInfo("Tester", "BhanuPriya");
         extent.setSystemInfo("OS", System.getProperty("os.name"));
     }
 
     @Override
+    public void onFinish(ISuite suite) {
+        extent.flush();
+    }
+
+    @Override
     public void onTestStart(ITestResult result) {
         ExtentTest extentTest = extent.createTest(result.getMethod().getMethodName())
-                .assignCategory(result.getTestContext().getCurrentXmlTest().getName()) // Chrome Test / Firefox Test
-                .assignDevice(getBrowserFromParameter(result)); // Browser parameter
+                .assignCategory(result.getTestContext().getName());
         test.set(extentTest);
     }
 
@@ -50,53 +44,24 @@ public class ExtentTestNGListener implements ITestListener {
     @Override
     public void onTestFailure(ITestResult result) {
         test.get().fail(result.getThrowable());
-
-        // Screenshot on failure
-        Object testClass = result.getInstance();
-        WebDriver driver = ((tests.BaseTest) testClass).getDriver(); // You must have getDriver() in BaseTest
-
-        if (driver != null) {
-            String screenshotPath = takeScreenshot(driver, result.getMethod().getMethodName());
-            try {
-                test.get().addScreenCaptureFromPath(screenshotPath);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     @Override
     public void onTestSkipped(ITestResult result) {
-        test.get().skip("Test SKIPPED");
+        test.get().skip(result.getThrowable());
     }
 
     @Override
-    public void onFinish(ITestContext context) {
-        extent.flush();
+    public void onTestFailedButWithinSuccessPercentage(ITestResult result) {}
+
+    @Override
+    public void onTestFailedWithTimeout(ITestResult result) {
+        onTestFailure(result);
     }
 
-    // Get browser name from parameter
-    private String getBrowserFromParameter(ITestResult result) {
-        String browser = result.getTestContext().getCurrentXmlTest().getParameter("browser");
-        return browser != null ? browser : "Unknown";
-    }
+    @Override
+    public void onStart(ITestContext context) {}
 
-    // Screenshot utility
-    private String takeScreenshot(WebDriver driver, String methodName) {
-        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String screenshotDir = "test-output/screenshots/";
-        String screenshotPath = screenshotDir + methodName + "_" + timestamp + ".png";
-
-        try {
-            // Create directory if not exists
-            Files.createDirectories(Paths.get(screenshotDir));
-
-            File srcFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-            Files.copy(srcFile.toPath(), Paths.get(screenshotPath));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return screenshotPath;
-    }
+    @Override
+    public void onFinish(ITestContext context) {}
 }
